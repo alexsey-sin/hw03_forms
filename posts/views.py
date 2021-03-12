@@ -20,15 +20,11 @@ def group_posts(request, slug):
 
 @login_required
 def new_post(request):
-    if request.method == 'POST':
-        form = PostForm(request.POST)
-
-        if form.is_valid():
-            new_post = form.save(commit=False)
-            new_post.author = request.user
-            new_post.text = form.cleaned_data['text']
-            new_post.save()
-            return redirect('/')
-    elif request.method == 'GET':
-        form = PostForm()
+    form = PostForm(request.POST or None)
+    if request.method == 'POST' and form.is_valid():
+        new_post = form.save(commit=False)
+        new_post.author = request.user
+        new_post.text = form.cleaned_data['text']
+        new_post.save()
+        return redirect('index')
     return render(request, 'new_post.html', {'form': form})
