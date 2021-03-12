@@ -12,14 +12,7 @@ class SignUp(CreateView):
 
 
 def user_contact(request):
-    if request.method == 'POST':
-        form = ContactForm(request.POST)
-
-        if form.is_valid():
-            form.save()
-            return redirect('/')
-
-        return render(request, 'contact.html', {'form': form})
-
-    form = ContactForm()
+    form = ContactForm(request.POST or None)
+    if request.method == 'POST' and form.is_valid():
+        form.save()
     return render(request, 'contact.html', {'form': form})

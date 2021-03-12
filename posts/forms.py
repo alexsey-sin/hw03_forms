@@ -6,6 +6,10 @@ class PostForm(forms.ModelForm):
     class Meta:
         model = Post
         fields = ('group', 'text')
+        labels = {
+            'group': 'Группа',
+            'text': 'Текст',
+        }
 
     def clean_text(self):
         text = self.cleaned_data['text']
