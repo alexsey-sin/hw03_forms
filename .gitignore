@@ -5,6 +5,7 @@ venv/
 .venv/
 .vscode
 sent_emails/
+__venv_linux/
 
 __pycache__/
 *.py[cod]
