@@ -6,8 +6,8 @@ from django.shortcuts import render
 
 class SignUp(CreateView):
     form_class = CreationForm
-    success_url = reverse_lazy("signup")
-    template_name = "signup.html"
+    success_url = reverse_lazy('login')
+    template_name = 'signup.html'
 
 
 def user_contact(request):
