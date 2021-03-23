@@ -25,7 +25,13 @@ SECRET_KEY = 'gbuhdo(6oucci3be5max-!0$2vq$t6*t3la*_0mfclftoftc_('
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    '[::1]',
+    'testserver',
+    '*',
+]
 
 
 # Application definition
@@ -53,7 +59,7 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'yatube.urls'
 
-TEMPLATES_DIR = os.path.join(BASE_DIR, 'templates/posts')
+TEMPLATES_DIR = os.path.join(BASE_DIR, 'posts/templates/')
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
