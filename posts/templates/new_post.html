@@ -1,6 +1,5 @@
 {% extends "base.html" %}
 {% block title %}Новая запись{% endblock %}
-{% block header %}Новая запись{% endblock %}
 {% block content %}
 
 {# загружаем фильтр #}
@@ -9,6 +8,7 @@
 <div class="row justify-content-center">
     <div class="col-md-8 p-5">
         <div class="card">
+            <div class="card-header">Новая запись</div>
             <div class="card-body">
                 
               {% for error in form.errors %}

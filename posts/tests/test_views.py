@@ -60,9 +60,9 @@ class PostPagesTests(TestCase):
     def test_index_pages_show_correct_context(self):
         """Шаблон index сформирован с правильным контекстом."""
         response = self.authorized_client.get(reverse('index'))
-        self.assertEqual(response.context['posts'][0].text, 'Тестовый текст')
-        self.assertEqual(response.context['posts'][0].author, self.user)
-        self.assertEqual(response.context['posts'][0].group, self.group_story)
+        self.assertEqual(response.context['page'][0].text, 'Тестовый текст')
+        self.assertEqual(response.context['page'][0].author, self.user)
+        self.assertEqual(response.context['page'][0].group, self.group_story)
 
     # Проверим словарь context страницы group
     # И созданный пост в этой группе
