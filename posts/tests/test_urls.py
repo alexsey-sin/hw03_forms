@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from posts.models import Group
 
 
-class StaticURLTests(TestCase):
+class URLTests(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()

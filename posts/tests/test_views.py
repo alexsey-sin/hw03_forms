@@ -1,18 +1,28 @@
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 from django.urls import reverse
-from posts.models import Group
+from posts.models import Group, Post
 from django import forms
 
 User = get_user_model()
 
 
-class TaskPagesTests(TestCase):
+class PostPagesTests(TestCase):
+    group_note = None
+    group_story = None
+    new_post = None
+
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
+        # Создадим запись в БД для проверки доступности адреса group/story/
+        cls.group_note = Group.objects.create(
+            title='Рассказ',
+            slug='story',
+            description='Рассказ любого содержания',
+        )
         # Создадим запись в БД для проверки доступности адреса group/note/
-        Group.objects.create(
+        cls.group_story = Group.objects.create(
             title='Заметки',
             slug='note',
             description='Небольшие заметки любого содержания',
@@ -23,6 +33,11 @@ class TaskPagesTests(TestCase):
         self.user = User.objects.create_user(username='template_user')
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
+        self.post = Post.objects.create(
+            text='Тестовый текст',
+            author=self.user,
+            group=self.group_story,
+        )
 
     # Проверяем используемые шаблоны
     def test_pages_use_correct_template(self):
@@ -40,50 +55,53 @@ class TaskPagesTests(TestCase):
                 response = self.authorized_client.get(reverse_name)
                 self.assertTemplateUsed(response, template)
 
-    # Проверка словаря контекста главной страницы (в нём передаётся форма)
-    def test_home_page_shows_correct_context(self):
+    # Проверим словарь context главной страницы index
+    # И здесь мы проверим, что созданный пост появился на главной странице
+    def test_index_pages_show_correct_context(self):
         """Шаблон index сформирован с правильным контекстом."""
         response = self.authorized_client.get(reverse('index'))
+        self.assertEqual(response.context['posts'][0].text, 'Тестовый текст')
+        self.assertEqual(response.context['posts'][0].author, self.user)
+        self.assertEqual(response.context['posts'][0].group, self.group_story)
+
+    # Проверим словарь context страницы group
+    # И созданный пост в этой группе
+    def test_group_pages_show_correct_context(self):
+        """Шаблон group сформирован с правильным контекстом."""
+        response = self.authorized_client.get(
+            reverse('group', kwargs={'slug': 'note'}))
+        self.assertEqual(response.context['group'].title, 'Заметки')
+        self.assertEqual(response.context['group'].description, (
+            'Небольшие заметки любого содержания'))
+        self.assertEqual(response.context['posts'][0].text, 'Тестовый текст')
+        self.assertEqual(response.context['posts'][0].author, self.user)
+        self.assertEqual(response.context['posts'][0].group, self.group_story)
+
+    # Проверим отсутствие на страницы group другой группы созданного поста
+    def test_group_pages_not_show_new_post(self):
+        """Шаблон group не содержит искомый контекст."""
+        response = self.authorized_client.get(
+            reverse('group', kwargs={'slug': 'story'}))
+        self.assertTrue(self.new_post not in response.context['posts'])
+
+    # Проверим словарь context страницы new (в ней передаётся форма)
+    def test_new_pages_show_correct_context(self):
+        """Шаблон new_post сформирован с правильным контекстом."""
+        response = self.authorized_client.get(reverse('new_post'))
         # Словарь ожидаемых типов полей формы:
         # указываем, объектами какого класса должны быть поля формы
         form_fields = {
+            'group': forms.fields.ChoiceField,
             # При создании формы поля модели типа TextField
             # преобразуются в CharField с виджетом forms.Textarea
             'text': forms.fields.CharField,
-            'pub_date': forms.fields.DateTimeField,
-            'author': forms.fields.CharField,
-            'group': forms.fields.CharField,
         }
 
-        # Проверяем, что типы полей формы в словаре context соответствуют ожиданиям
-        # for value, expected in form_fields.items():
-        #     with self.subTest(value=value):
-        #         form_field = response.context['form'].fields[value]
-        #         # Проверяет, что поле формы является экземпляром указанного класса
-        #         self.assertIsInstance(form_field, expected)
-
-    # # Проверяем, что словарь context страницы со списком задач
-    # # в первом элементе списка object_list содержит ожидаемые значения
-    # def test_task_list_page_shows_correct_context(self):
-    #     """Шаблон task_list сформирован с правильным контекстом."""
-    #     response = self.authorized_client.get(reverse('deals:task_list'))
-    #     # Взяли первый элемент из списка и проверили, что его содержание
-    #     # совпадает с ожидаемым
-    #     first_object = response.context['object_list'][0]
-    #     task_title_0 = first_object.title
-    #     task_text_0 = first_object.text
-    #     task_slug_0 = first_object.slug
-    #     self.assertEqual(task_title_0, 'Заголовок')
-    #     self.assertEqual(task_text_0, 'Текст')
-    #     self.assertEqual(task_slug_0, 'test-slug')
-    #
-    # # Проверяем, что словарь context страницы task/test-slug
-    # # содержит ожидаемые значения
-    # def test_task_detail_pages_show_correct_context(self):
-    #     """Шаблон task_detail сформирован с правильным контекстом."""
-    #     response = self.authorized_client.get(
-    #             reverse('deals:task_detail', kwargs={'slug': 'test-slug'})
-    #     )
-    #     self.assertEqual(response.context['task'].title, 'Заголовок')
-    #     self.assertEqual(response.context['task'].text, 'Текст')
-    #     self.assertEqual(response.context['task'].slug, 'test-slug')
+        # Проверяем, что типы полей формы в словаре context
+        # соответствуют ожиданиям
+        for value, expected in form_fields.items():
+            with self.subTest(value=value):
+                form_field = response.context['form'].fields[value]
+                # Проверяет, что поле формы является экземпляром
+                # указанного класса
+                self.assertIsInstance(form_field, expected)

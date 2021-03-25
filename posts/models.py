@@ -5,6 +5,7 @@ User = get_user_model()
 
 
 class Group(models.Model):
+    objects = None
     title = models.CharField(
         verbose_name='Заголовок',
         max_length=200,
@@ -25,19 +26,28 @@ class Group(models.Model):
 
 
 class Post(models.Model):
+    objects = None
     text = models.TextField(
         verbose_name='Текст',
         help_text='Начните писать здесь',
     )
-    pub_date = models.DateTimeField(auto_now_add=True)
-    author = models.ForeignKey(User, on_delete=models.CASCADE,
-                               related_name='author_posts')
+    pub_date = models.DateTimeField(
+        verbose_name='Дата публикации',
+        auto_now_add=True,
+    )
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        verbose_name='Автор',
+        related_name='author_posts',
+    )
     group = models.ForeignKey(
         Group,
+        verbose_name='Группа',
         on_delete=models.SET_NULL,
         related_name='group_posts',
         blank=True, null=True,
     )
 
     def __str__(self):
-        return self.text
+        return self.text[:15]

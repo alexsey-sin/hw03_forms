@@ -15,12 +15,6 @@ class GroupModelTest(TestCase):
             description='Тестовый текст',
         )
 
-    def test_object_name_is_title_field(self):
-        """__str__  task - это строчка с содержимым task.title."""
-        task = GroupModelTest.task
-        expected_object_name = task.title
-        self.assertEquals(expected_object_name, str(task))
-
     def test_verbose_name(self):
         """verbose_name в полях совпадает с ожидаемым."""
         task = GroupModelTest.task
