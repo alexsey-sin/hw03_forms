@@ -7,6 +7,12 @@ venv/
 sent_emails/
 __venv_linux/
 
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+
 __pycache__/
 *.py[cod]
 
